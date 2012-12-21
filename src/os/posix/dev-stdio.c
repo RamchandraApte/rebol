@@ -42,6 +42,8 @@
 #include <errno.h>
 #include <unistd.h>
 #include <signal.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "reb-host.h"
 #include "host-lib.h"
@@ -68,7 +70,7 @@ void Quit_Terminal(void*);
 int  Read_Line(void*, char*, int);
 #endif
 
-void Put_Str(char *buf);
+void Put_Str(const REBYTE *buf);
 
 void *Term_IO;
 

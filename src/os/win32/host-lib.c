@@ -83,7 +83,7 @@ static void *Task_Ready;
 
 /***********************************************************************
 **
-*/	static void Insert_Command_Arg(REBCHR *cmd, REBCHR *arg, REBINT limit)
+*/	static void Insert_Command_Arg(REBCHR *cmd, const REBCHR *arg, REBINT limit)
 /*
 **		Insert an argument into a command line at the %1 position,
 **		or at the end if there is no %1. (An INSERT action.)
@@ -302,36 +302,38 @@ static void *Task_Ready;
 
 /***********************************************************************
 **
-*/	REBCHR *OS_Get_Env(REBCHR *var, int mode)
+*/	REBINT OS_Get_Env(const REBCHR *envname, REBCHR* envval, REBINT valsize)
 /*
 **		Get a value from the environment.
-**		Returns string for success or zero if missing.
-**		Return string should be copied not stored or changed.
+**		Returns size of retrieved value for success or zero if missing.
+**		If return size is greater than valsize then value contents
+**		are undefined, and size includes null terminator of needed buf
 **
 ***********************************************************************/
 {
-#ifdef UNICODE
-	return _wgetenv(var);
-#else
-	return getenv(var);
-#endif
+	// Note: The Windows variant of this API is NOT case-sensitive
+
+	REBINT result = GetEnvironmentVariable(envname, envval, valsize);
+	if (result == 0) { // some failure...
+		if (GetLastError() == ERROR_ENVVAR_NOT_FOUND) {
+			return 0; // not found
+		}
+		return -1; // other error
+	}
+	return result;
 }
 
 
 /***********************************************************************
 **
-*/	int OS_Set_Env(REBCHR *expr, int mode)
+*/	REBOOL OS_Set_Env(const REBCHR *envname, const REBCHR *envval)
 /*
 **		Set a value from the environment.
-**		Returns 0 for success and <0 for errors.
+**		Returns >0 for success and 0 for errors.
 **
 ***********************************************************************/
 {
-#ifdef UNICODE
-	return _wputenv(expr);
-#else
-	return putenv(expr);
-#endif
+	return SetEnvironmentVariable(envname, envval);
 }
 
 
@@ -431,7 +433,7 @@ static void *Task_Ready;
 
 /***********************************************************************
 **
-*/	REBOOL OS_Set_Current_Dir(REBCHR *path)
+*/	REBOOL OS_Set_Current_Dir(const REBCHR *path)
 /*
 **		Set the current directory to local path. Return FALSE
 **		on failure.
@@ -464,7 +466,7 @@ static void *Task_Ready;
 
 /***********************************************************************
 **
-*/	void *OS_Open_Library(REBCHR *path, REBCNT *error)
+*/	void *OS_Open_Library(const REBCHR *path, REBCNT *error)
 /*
 **		Load a DLL library and return the handle to it.
 **		If zero is returned, error indicates the reason.
@@ -492,7 +494,7 @@ static void *Task_Ready;
 
 /***********************************************************************
 **
-*/	void *OS_Find_Function(void *dll, char *funcname)
+*/	void *OS_Find_Function(void *dll, const char *funcname)
 /*
 **		Get a DLL function address from its string name.
 **
@@ -561,7 +563,7 @@ static void *Task_Ready;
 
 /***********************************************************************
 **
-*/	int OS_Create_Process(REBCHR *call, u32 flags)
+*/	int OS_Create_Process(const REBCHR *call, u32 flags)
 /*
 **		Return -1 on error.
 **		For right now, set flags to 1 for /wait.
@@ -591,9 +593,24 @@ static void *Task_Ready;
 	si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 	si.hStdError  = GetStdHandle(STD_ERROR_HANDLE);
 
+	// For not-obviously-good reasons, the Unicode version of CreateProcess
+	// on Windows requires the second parameter to be writable.  Rather than
+	// propagate this concern into the callers, we copy in that case.
+
+#ifdef OS_WIDE_CHAR
+	// what is the idiom for wide string mechanics in host kit?
+	REBINT lencall = LEN_STR(call);
+	REBUNI* wcall = MAKE_STR(lencall + 1);	
+	COPY_STR(wcall, call, lencall);
+#endif
+
 	result = CreateProcess(
 		NULL,						// Executable name
-		call,						// Command to execute
+#ifdef OS_WIDE_CHAR
+		wcall,						// Command to execute, mutable
+#else
+		call,						// Command to execute, const
+#endif
 		NULL,						// Process security attributes
 		NULL,						// Thread security attributes
 		FALSE,						// Inherit handles
@@ -604,6 +621,12 @@ static void *Task_Ready;
 		&si,						// Startup information
 		&pi							// Process information
 	);
+
+#ifdef OS_WIDE_CHAR
+	// Again: what is the idiom?
+	FREE_MEM(wcall);	
+	wcall = 0;
+#endif
 
 	// Wait for termination:
 	if (result && (flags & 1)) {
@@ -620,7 +643,7 @@ static void *Task_Ready;
 
 /***********************************************************************
 **
-*/	int OS_Browse(REBCHR *url, int reserved)
+*/	int OS_Browse(const REBCHR *url, int reserved)
 /*
 ***********************************************************************/
 {
@@ -666,7 +689,7 @@ static void *Task_Ready;
 	OPENFILENAME ofn = {0};
 	BOOL ret;
 	//int err;
-	REBCHR *filters = TEXT("All files\0*.*\0REBOL scripts\0*.r\0Text files\0*.txt\0"	);
+	const REBCHR *filters = TEXT("All files\0*.*\0REBOL scripts\0*.r\0Text files\0*.txt\0"	);
 
 	ofn.lStructSize = sizeof(ofn);
 

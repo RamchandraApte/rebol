@@ -2,7 +2,7 @@ REBOL [
 	System: "REBOL [R3] Language Interpreter and Run-time Environment"
 	Title: "System build targets"
 	Rights: {
-		Copyright 2012 REBOL Technologies
+		Copyright © 2012 REBOL Technologies
 		REBOL is a trademark of REBOL Technologies
 	}
 	License: {

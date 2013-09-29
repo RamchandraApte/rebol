@@ -2,7 +2,7 @@
 **
 **  REBOL Language Interpreter and Run-time Environment
 **
-**  Copyright 2012 REBOL Technologies
+**  Copyright © 2012 REBOL Technologies
 **  REBOL is a trademark of REBOL Technologies
 **
 **  Licensed under the Apache License, Version 2.0 (the "License");

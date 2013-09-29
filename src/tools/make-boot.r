@@ -2,7 +2,7 @@ REBOL [
 	System: "REBOL [R3] Language Interpreter and Run-time Environment"
 	Title: "Make primary boot files"
 	Rights: {
-		Copyright 2012 REBOL Technologies
+		Copyright © 2012 REBOL Technologies
 		REBOL is a trademark of REBOL Technologies
 	}
 	License: {
@@ -75,7 +75,7 @@ either tuple? opts [
 ;-- Title string put into boot.h file checksum:
 Title:
 {REBOL
-Copyright 2012 REBOL Technologies
+Copyright © 2012 REBOL Technologies
 REBOL is a trademark of REBOL Technologies
 Licensed under the Apache License, Version 2.0
 }

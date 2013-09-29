@@ -2,7 +2,7 @@ REBOL [
 	System: "REBOL [R3] Language Interpreter and Run-time Environment"
 	Title: "REBOL 3 Mezzanine: End of Mezz"
 	Rights: {
-		Copyright 2012 REBOL Technologies
+		Copyright © 2012 REBOL Technologies
 		REBOL is a trademark of REBOL Technologies
 	}
 	License: {

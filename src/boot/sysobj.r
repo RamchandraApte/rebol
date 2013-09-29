@@ -2,7 +2,7 @@ REBOL [
 	System: "REBOL [R3] Language Interpreter and Run-time Environment"
 	Title: "System object"
 	Rights: {
-		Copyright 2012 REBOL Technologies
+		Copyright © 2012 REBOL Technologies
 		REBOL is a trademark of REBOL Technologies
 	}
 	License: {
@@ -23,7 +23,7 @@ version:  0.0.0
 build:    1
 platform: none
 
-license: {Copyright 2012 REBOL Technologies
+license: {Copyright © 2012 REBOL Technologies
 REBOL is a trademark of REBOL Technologies
 Licensed under the Apache License, Version 2.0.
 See: http://www.apache.org/licenses/LICENSE-2.0
